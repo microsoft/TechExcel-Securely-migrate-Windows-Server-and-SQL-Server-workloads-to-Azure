@@ -332,3 +332,264 @@ In this exercise, you will go through the steps necessary to migrate Tailspin To
 
     ![The Azure SQL Managed Instance resource is shown in the Azure Portal with the WideWorldImporters migration showing a Status of Online.](images/azure-portal-sql-mi-database-status-online.png "Azure SQL MI in Azure Portal showing the WideWorldImporters database in Online status")
 
+
+
+
+## Exercise 2: Create VM to migrate web application
+
+Duration: 30 minutes
+
+In this exercise, you will create a new Windows Server 2022: Azure Edition virtual machine (VM) that will be the destination for migrating the on-premises Web Application to Azure, and then you will use Azure Bastion to connect to the VM over Remote Desktop (RDP). Azure Bastion will allow secure remote connections to the VM for Administrators. Windows Server Azure Edition is a specific image of Windows Server with unique capabilities such as rebootless patching with Hotpatch, available only on Azure.
+
+### Task 1: Create Windows Server 2022 Azure Edition VM for application hosting
+
+In this task, you will create a new Windows Server 2022: Azure Edition virtual machine (VM) that will be the destination for migrating the on-premises Web Application to Azure.
+
+1. Sign in to the [Azure Portal](https://portal.azure.com). Ensure that you're using a subscription associated with the same resources you created during the Before the hands-on lab set up.
+
+2. On the **Home** page within the Azure Portal, towards the top, select **Create a resource**.
+
+    ![The Home page of the Azure Portal is shown with the 'Create a resource' link highlighted.](images/azure-portal-home-create-resource-link.png "Create a resource on Azure Portal Home page")
+
+3. Within the **Search services and marketplace** field, type **Windows Server** and press Enter to search the marketplace, then select **Windows Server**.
+
+    ![Windows Server is highlighted within the Azure Marketplace search results.](images/azure-marketplace-windows-server.png "Windows Server is highlighted")
+
+4. Choose **Windows Server 2022 Datacenter: Azure Edition**, then select **Create**.
+
+5. On the **Create a virtual machine** pane, set the following values to configure the new virtual machine:
+
+    - **Resource group**: Select the resource group that you created for this lab. Such as `tailspin-rg`.
+    - **Virtual machine name**: Give the VM a unique name, such as `tailspin-webapp-vm`.
+    - **Region**: Select **North Central US**
+    - **Image**: Verify the image is set to **Windows Server 2022 Datacenter: Azure Edition - Gen 2**.
+
+    ![The Create a virtual machine pane is shown with values entered and filed highlighted.](images/create-virtual-machine-windows-server-image-set.png "Create a virtual machine with field set")
+
+6. Set the **Size** field by selecting the **Standard_D4s_v5** virtual machine size.
+
+    ![The Virtual Machine Size field is shown with the desired size selected.](images/create-virtual-machine-size-set.png "VM size is set")
+
+7. Set a **Username** and **Password** for the **Administrator account** for the VM.
+
+    > **Note**: Be sure to save the Username and Password for the VM, so it can be used later. A recommendation for easy to remember Username is `demouser` and Password is `demo!pass123`.
+
+8. Select **Next** until you are navigated to the **Networking** tab of the **Create a virtual machine** page.
+
+    ![The Networking tab of the Create a virtual machine pane is selected.](images/create-virtual-machine-networking-tab-selected.png "Networking tab is selected")
+
+9. Provision the VM in the Spoke VNet in Azure by selecting the following values under the **Network interface** section:
+
+    - **Virtual network**: Select the Spoke VNet created for this lab. Its name will be similar to `tailspin-spoke-vnet`.
+    - **Subnet**: `default`
+    - **Public IP**: `None`
+
+    ![The Networking tab has the Network interface values selected for the Virtual network, Subnet, and Public IP to connect to the VM.](images/create-virtual-machine-networking-values-set.png "Virtual Network, Subnet, and Public IP values are set")
+
+10. Set the following values to ensure that HTTPS traffic will be allowed to connect to the VM:
+
+    - **Public inbound ports**: `Allow selected ports`
+    - **Select inbound ports**: `HTTPS (443)`
+
+    ![The Public inbound ports field is set to Allow selected ports and the Select inbound ports has HTTPS 443 selected.](images/create-virtual-network-https-traffic-allowed.png "Networking inbound ports set to allow HTTPS traffic")
+
+11. Select **Review + create** to review the virtual machine settings.
+
+    ![The Review + create button for the Create a virtual machine pane is shown and highlighted.](images/create-virtual-network-review-create-button.png "Review + create button")
+
+12. Select **Create** to begin provisioning the virtual machine once the **Validation passed** message is shown.
+
+    ![The Validation passed message is shown and the Create button is highlighted.](images/create-virtual-machine-create-button.png "Validation passed and Create button")
+
+### Task 2: Check remote desktop access
+
+In this task, you will test Remote Desktop (RDP) connectivity to the newly created virtual machine using Azure Bastion.
+
+1. In the Azure Portal, navigate to the newly created **Virtual Machine**.
+
+    ![The Virtual machine pane is shown in the Azure Portal for the newly created VM.](images/web-app-win2022server-virtual-machine-pane.png "Virtual machine pane is open")
+
+2. On the left, under the **Operations** section, select **Bastion**.
+
+    ![The Bastion link under Operations is shown and highlighted.](images/portal-virtual-machine-operations-bastion-link.png "Bastion link")
+
+3. On the **Bastion** pane, enter the **Username** and **Password** that was set for the Administrator User of the VM when it was created, then select **Connect**.
+
+    ![The Bastion pane for the VM is shown with the username and password fields entered.](images/portal-virtual-machine-operations-bastion-pane.png "Bastion pane with username and password entered")
+
+    > **Note**: The Azure Bastion instance named `tailspin-hub-bastion` was previously created with the Before the Hands-on lab setup. This is a required resource for using Azure Bastion to securely connect to Azure VMs using RDP from within the Azure Portal.
+
+4. A new browser tab will open with Azure Bastion connected to the virtual machine over RDP. To close this session, you can close this browser tab.
+
+    ![A browser window is shown open with Bastion connected to a remote desktop session to the VM.](images/browser-azure-bastion-connected-web-app-win2022server.png "Browser window open with Azure Bastion connected to the VM")
+
+> **Note**: Now that the Windows Server 2022 VM has been created in Azure, Tailspin Toys will now be able to modify their Continuous Integration and Continuous Deployment (CI/CD) pipelines within Azure DevOps to begin deploying the Web Application code to this virtual machine as they get ready for migrating the application to Azure.
+
+
+
+
+## Exercise 3: Azure Arc-enable on-premises VM
+
+Duration: 45 minutes
+
+In this exercise, you will Azure Arc-enable a Windows Server VM that Tailspin has on-premises. This VM is being Arc-enabled since there are no plans to migrate it to Azure, but Tailspin would like to simplify the management of all their VMs in a single place. Azure Arc provides the functionality to manage Azure and on-premises VMs in a single place giving Tailspin Toys exactly what they are looking for to simplify VM management and administration.
+
+### Task 1: Generate Azure Arc script to add server
+
+1. Sign in to the [Azure Portal](https://portal.azure.com). Ensure that you're using a subscription associated with the same resources you created during the Before the hands-on lab set up.
+
+2. In the **Search resources, services, and docs** box at the top of the portal, search for **Azure Arc**, then select the **Azure Arc** service.
+
+    ![An Azure Portal search is shown showing the results for a search for Azure Arc with the Azure Arc service in the results highlighted.](images/azure-portal-search-azure-arc-service.png "Azure Portal search for Azure Arc with 'Azure Arc' option highlighted")
+
+3. On the **Azure Arc** pane, select the **Infrastructure** tab, then select the **Add** button under **Servers**.
+
+    ![The Azure Arc pane in the Azure Portal is shown navigated to the Infrastructure pane and the Servers Add button is highlighted.](images/azure-arc-pane-infrastructure-servers-add-button.png "Azure Arc pane showing Infrastructure tab")
+
+4. Under **Add a single server** select **Generate script**.
+
+    ![The Add servers with Azure Arc pane is shown with the Generate Script button highlighted for the Add a single server option.](images/2022-10-07-21-36-05.png "Add servers with Azure Arc with Generate script")
+
+5. On the **Add a server with Azure Arc** pane, read the requirements of Azure Arc that are listed, then select **Next**.
+
+    ![The prerequisites tab is shown for the Add a server with Azure Arc pane with the requirements listed.](images/2022-10-07-21-37-35.png "Add a server with Azure Arc requirements")
+
+6. On the **Resource details** tab, enter the following values, then select **Next**.
+
+    - **Resource group**: Select the Resource Group created for this lab. For example: `tailspin-rg`.
+    - **Region**: Select **North Central US**.
+    - **Operating system**: `Windows`
+    - **Connectivity method**: `Public endpoint`
+
+    ![The Resource details tab of the Add a server with Azure Arc pane is displayed with values entered.](images/2022-09-22-21-13-42.png "Resource details tab with values entered")
+
+7. On the **Tags** tab, enter the following tag values to identify this server, then select **Next**:
+
+    - **Datacenter**: `headquarters`
+    - **City**: `Milwaukee`
+    - **StateOrDistrict**: `WI`
+    - **CountryOrRegion**: `USA`
+
+    ![The Tags tab of the Add a server with Azure Arc pane is shown with the tag values entered.](images/azure-arc-add-server-tags-tab.png "Tags tab with all tag values entered")
+
+8. On the **Download and run script** tab, select **Download** to download the generated script. By default, the script named `OnboardingScript.ps1` will be saved to the `Downloads` folder.
+
+    ![The Download button is highlighted on the Download and run script tab.](images/azure-arc-download-script.png "Download and run script")
+
+### Task 2: Run script to add server to Azure Arc
+
+1. In the Azure Portal, navigate to the Resource Group for the lab, then select the **`tailspin-onprem-hyperv-vm`** virtual machine resource. This is the simulated on-premises Hyper-V host VM.
+
+    ![The resource group for the lab is shown with the simulated on-premises Hyper-V Host VM highlighted in the resource list.](images/azure-portal-lab-rg-hyperv-vm.png "Resource group with simulated on-premises Hyper-V Host VM highlighted")
+
+2. On the left, select **Bastion** under **Operations**.
+
+    ![The virtual machine pane for the simulated on-premises hyper-v host VM is shown with the Bastion link under Operations highlighted.](images/azure-portal-hyper-v-host-vm-bastion-link.png "Bastion link under Operations")
+
+3. Enter the **Username** and **Password**, then select **Connect**.
+
+    > **Note**: When the VM was created the credentials were set up as:
+    - **Username**: `demouser`
+    - **Password**: `demo!pass123`
+
+    ![The Bastion pane is shown for the VM with the Username and Password values entered and fields highlighted.](images/azure-portal-vm-bastion-username-password-entered.png "Bastion credentials shown entered")
+
+4. Once connected to the Hyper-V Host VM, open the **Start menu**, then search for and run the **Hyper-V Manager**.
+
+5. Within the **Hyper-V Manager**, double-click the **OnPremVM** VM to connect to it.
+
+    ![The Hyper-V Manager is shown with the list of virtual machines displayed with the OnPremVM highlighted.](images/hyper-v-manager-vm-list.png "Hyper-V Manager list of VMs with OnPremVM shown")
+
+6. Once connected to the **OnPremVM** VM within Hyper-V, sign in using the **Administrator** account and the password of `demo!pass123`.
+
+    > **Note**: If you encounter that the **OnPremVM** has **No Internet Connection**, go back into the `tailspin-onprem-hyperv-vm` Hyper-V Host VM and perform the following steps:
+    > - Open the **Network Connections**.
+    > - Locate the **Ethernet** connection and right-click it.
+    > - Select **Properties**.
+    > - Select the **Sharing** tab.
+    > - Disable and re-enable **Internet Connection Sharing** on this connection.
+    >
+    > You may see a warning message when disabling it and re-enabling it, but it will still work to restore Internet Connection Sharing with the **OnPremVM** that is connected through the Host VM's network connection.
+    >
+    > ![The Ethernet connection properties on the Hyper-V Host VM showing Internet Connection Sharing option highlighted.](images/windows-hyperv-network-connections-internet-connection-sharing.png "Ethernet Properties for Internet Connection Sharing")
+
+7. Within the **OnPremVM**, open **Internet Explorer**, go to the following link to download the Windows Update for installing **PowerShell 5.1**, and run it. This will install PowerShell 5.1 on the Windows Server 2012 R2 VM, since this is the version of PowerShell required by the Azure Arc script.
+
+    <https://go.microsoft.com/fwlink/?linkid=839516>
+
+8. Within the **OnPremVM**, open **Internet Explorer**, go to the following link to download the .NET Framework 4.8, and install it. The Azure Arc script will install the **Azure Connected Machine Agent** which requires **.NET Framework 4.6 or later**.
+
+    <https://go.microsoft.com/fwlink/?LinkId=2085155>
+
+    > **Note**: The .NET Framework installer will display a **Blocking Issues** box with a note that another update needs to be installed.
+    > The following 2 updates will need to be installed in the following order:
+    > - Install KB2919442 from <https://www.microsoft.com/en-us/download/details.aspx?id=42153>
+    > - Install KB2919355 from <https://www.microsoft.com/en-us/download/details.aspx?id=42334>
+    >
+    > Be sure to restart the VM after installing the updates and before you continue with the .NET Framework install.
+    >
+    > ![The blocking issue warning of the .NET Framework installer is shown with the message for the blocking issue highlighted.](images/dot-net-framwork-blocking-issue.png "Blocking issue warning with message highlighted")
+
+9. Within the **OnPremVM**, open the **Windows PowerShell ISE**, and create a new script file.
+
+10. Paste in the contents of the Azure Arc `OnboardingScript.ps1` script previously downloaded.
+
+    > **Note**: Within the Hyper-V Virtual Machine Connection window, you may need to use the **Clipboard** -> **Type clipboard text** menu option to paste into the **OnPremVM**.
+
+11. Run the full script. This will install the Azure Arc agent and Arc-enable the VM. When the script opens a browser window, enter your credentials to authenticate with Azure.
+
+    > **Note**: When the Azure Arc script opens a new browser window to authenticate you with Azure, be sure to use an Organization Account with permissions to create `Microsoft.HybridCompute/machines` resources. Using a Personal Account is not supported and will result in a `AZCM0042: Failed to Create Resource` error message.
+
+12. When the script finishes executing successfully, a message stating "**Connected machine to Azure**" will be shown, along with the Azure Portal resource URL for the Azure Arc-enabled Server.
+
+    ![The command line output of the Azure Arc script is shown that includes the Connected machine to Azure message showing the script executed successfully.](images/azure-arc-enabled-script-successful.png "Azure Arc script successful with Connected machine to Azure message")
+
+### Task 3: Verify Azure Arc-enabled VM
+
+1. In the Azure Portal, navigate to the Resource Group for the lab.
+
+    ![The tailspin-rg Resource group for the lab is shown in the Azure Portal.](images/azure-portal-resource-group-tailspin-rg.png "tailspin-rg resource group")
+
+2. Scroll down and locate the Azure resource of type **Server - Azure Arc**. and select it.
+
+    ![The resources in the resource group are shown with the resource of type Server - Azure Arc highlighted.](images/resource-group-showing-server-azure-arc-resource.png "Azure Resource Group showing resource list with Server - Azure Arc resource")
+
+    > **Note**: The on-premises VM has been Azure Arc-enabled and can be managed alongside other Azure resources. This is enabled by the **Azure Connected Machine Agent** running on the VM that facilitates the interaction between Azure and the Azure Arc-enabled VM.
+
+3. This is the **Server - Azure Arc** pane for the on-premises virtual machine that was just Azure Arc-enabled. The **Status** shows **Connected** to signify that the Azure Arc-enabled virtual machine is connected to Azure. Also, notice that the **Computer Name** and **Operating System** of the virtual machine are displayed.
+
+    ![The Server - Azure Arc pane in the Azure Portal is shown for the on-premises VM with status, computer name, and operating system values highlighted within the Essentials section.](images/azure-portal-server-azure-arc-enabled-vm.png "Azure Portal Server - Azure Arc pane for Azure Arc-enabled virtual machine")
+
+4. From here, there are several **Azure Arc** capabilities available to use for managing the Azure Arc-enabled virtual machine.
+
+    ![The Capabilities section of the Server- Azure Arc pane is shown with the list of capabilities to choose from.](images/azure-portal-server-azure-arc-capabilities.png "Azure Arc capabilities listed on the Server - Azure Arc pane")
+
+5. Select **Extensions** under **Settings**. This is where you can install Extensions on the Azure Arc-enabled virtual machine. For example, the **Custom Script Extension for Windows - Azure Arc** extension can be used to download PowerShell scripts and files from Azure storage and launch a PowerShell script on the machine.
+
+    ![The Extensions pane for the Server - Azure Arc resource is shown with the Extensions link under Settings highlighted.](images/azure-poral-server-azure-arc-extensions.png "Azure Portal Server - Azure Arc pane showing Extensions")
+
+## After the hands-on lab
+
+You should follow all steps provided *after* attending the Hands-on lab.
+
+Duration: 15 minutes
+
+### Task 1: Delete resource group to remove the lab environment
+
+1. Go to the **Azure Portal**.
+
+2. Go to your **Resource groups**.
+
+3. Select the **Resource group** you created.
+
+    ![The Azure Portal is showing the list of resource groups in the Azure Subscription with the resource group for this lab highlighted.](images/azure-portal-resource-groups.png "Resource group list in Azure Portal")
+
+4. Select **Delete Resource group**.
+
+    ![The Resource group pane in the Azure Portal for the resource group for this lab is shown with the Delete resource group button highlighted.](images/azure-portal-resource-group-delete-button.png "Resource group pane with Delete button highlighted")
+
+5. Enter the name of the **Resource group** and select **Delete**.
+
+    ![The confirmation box for deleting the resource group is shown with the resource group name entered into the 'Type the resource group name' field to confirm the delete operation and the Delete button is highlighted.](images/azure-portal-resource-group-delete-confirm.png "Delete Resource group confirmation prompt")
+
+Monitor the process to make sure the Resource Group is fully deleted.
