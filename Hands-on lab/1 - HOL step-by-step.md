@@ -21,7 +21,9 @@
   - [Task 1: Generate Azure Arc script to add server](#task-1-generate-azure-arc-script-to-add-server)
   - [Task 2: Run script to add server to Azure Arc](#task-2-run-script-to-add-server-to-azure-arc)
   - [Task 3: Verify Azure Arc-enabled VM](#task-3-verify-azure-arc-enabled-vm)
-- [After the hands-on lab](#after-the-hands-on-lab)
+- [Exercise 4: Secure your workloads](#exercise-4-secure-your-workloads)
+  - [Task 1: Protect your Virtual Machines with Microsoft Defender for Servers](#task-1-protect-your-virtual-machines-with-microsoft-defender-for-servers)
+- [Clean up resources](#clean-up-resources)
   - [Task 1: Delete resource group to remove the lab environment](#task-1-delete-resource-group-to-remove-the-lab-environment)
 
 <!-- /TOC -->
@@ -568,13 +570,32 @@ In this exercise, you will Azure Arc-enable a Windows Server VM that Tailspin ha
 
     ![The Extensions pane for the Server - Azure Arc resource is shown with the Extensions link under Settings highlighted.](images/azure-poral-server-azure-arc-extensions.png "Azure Portal Server - Azure Arc pane showing Extensions")
 
-## After the hands-on lab
 
-You should follow all steps provided *after* attending the Hands-on lab.
+
+## Exercise 4: Secure your workloads
+
+Duration: 60 minutes
+
+In this exercise, you will enable Azure Defender.
+
+### Task 1: Protect your Virtual Machines with Microsoft Defender for Servers
+
+1. Sign in to the [Azure Portal](https://portal.azure.com). Ensure that you're using a subscription associated with the same resources you created during the Before the hands-on lab set up.
+
+2. In the **Search resources, services, and docs** box at the top of the portal, search for **Microsoft Defender**, then select the **Microsoft Defender for Cloud** service.
+
+
+
+
+
+## Clean up resources
+
+Remember to remove any newly created Azure resources that you no longer use. Removing unused resources ensures you will not see unexpected charges.
+You should follow all steps provided *after* taken all the exercises. 
 
 Duration: 15 minutes
 
-### Task 1: Delete resource group to remove the lab environment
+### Task 1: Delete resource group to remove the exercise environment
 
 1. Go to the **Azure Portal**.
 
@@ -582,14 +603,14 @@ Duration: 15 minutes
 
 3. Select the **Resource group** you created.
 
-    ![The Azure Portal is showing the list of resource groups in the Azure Subscription with the resource group for this lab highlighted.](images/azure-portal-resource-groups.png "Resource group list in Azure Portal")
+    ![The Azure Portal is showing the list of resource groups in the Azure Subscription with the resource group for this exercise highlighted.](images/azure-portal-resource-groups.png "Resource group list in Azure Portal")
 
 4. Select **Delete Resource group**.
 
-    ![The Resource group pane in the Azure Portal for the resource group for this lab is shown with the Delete resource group button highlighted.](images/azure-portal-resource-group-delete-button.png "Resource group pane with Delete button highlighted")
+    ![The Resource group pane in the Azure Portal for the resource group for this exercise is shown with the Delete resource group button highlighted.](images/azure-portal-resource-group-delete-button.png "Resource group pane with Delete button highlighted")
 
 5. Enter the name of the **Resource group** and select **Delete**.
 
     ![The confirmation box for deleting the resource group is shown with the resource group name entered into the 'Type the resource group name' field to confirm the delete operation and the Delete button is highlighted.](images/azure-portal-resource-group-delete-confirm.png "Delete Resource group confirmation prompt")
 
-Monitor the process to make sure the Resource Group is fully deleted.
+Don't worry if the resources don't get immediately removed. Sometimes resources take a longer time to delete. Keep monitoring the process to make sure the Resource Group is fully deleted.

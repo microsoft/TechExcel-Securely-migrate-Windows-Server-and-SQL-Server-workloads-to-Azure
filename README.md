@@ -1,4 +1,4 @@
-# Tech Excel: Securely migrate Windows Server and SQL Server workloads to Azure
+# TechExcel: Securely migrate Windows Server and SQL Server workloads to Azure
 
 Tailspin Toys is a global manufacturer of children’s toys that was founded in 1957 with its global headquarters located in Milwaukee, WI. Their mission-critical workloads are currently hosted in an on-premises datacenter and are beginning a journey to modernize and migrate into the cloud using Microsoft Azure.
 
