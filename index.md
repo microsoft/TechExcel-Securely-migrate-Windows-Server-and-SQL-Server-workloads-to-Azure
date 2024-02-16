@@ -26,7 +26,7 @@ Tailspin already has a Hub and Spoke network setup in Azure with Azure Bastion f
 
 ## Solution architecture
 
-![Diagram showing on-premises network connected to Azure using Azure ExpressRoute with a Hub and Spoke network in Azure. The Spoke VNet contains the migrated Front-end, Back-end, and SQL Database workloads running within Subnets inside the Spoke VNet in Azure.](../../Hands-on%20lab/images/PreferredSolutionDiagram.png "Preferred Solution Diagram")
+![Diagram showing on-premises network connected to Azure using Azure ExpressRoute with a Hub and Spoke network in Azure. The Spoke VNet contains the migrated Front-end, Back-end, and SQL Database workloads running within Subnets inside the Spoke VNet in Azure.](../Hands-on%20lab/images/PreferredSolutionDiagram.png "Preferred Solution Diagram")
 
 The diagram shows an on-premises network connected to Azure using Azure ExpressRoute with a Hub and Spoke network in Azure. The Spoke VNet contains the migrated Front-end, Back-end, and SQL Database workloads running within Subnets inside the Spoke VNet in Azure.
 
