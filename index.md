@@ -49,7 +49,7 @@ To set up a S2S VPN connection as a backup for ExpressRoute private peering, you
 > You can find more information about Redundant Azure ExpressRoute peering locations at [https://learn.microsoft.com/en-us/azure/expressroute/use-s2s-vpn-as-backup-for-expressroute-privatepeering](https://learn.microsoft.com/en-us/azure/expressroute/use-s2s-vpn-as-backup-for-expressroute-privatepeering)
 
 
-### Zone-aware SKUs
+### ExpressRoute Gateway SKU Zone redundancy
 
 Azure zone-aware SKUs provide high availability and resiliency for your workloads and applications by distributing resources across multiple availability zones within an Azure region. Each availability zone is a separate physical location with independent power, cooling, and networking, providing protection against datacenter-level failures.
 
