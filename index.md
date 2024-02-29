@@ -77,5 +77,5 @@ This lab is available as GitHub pages [here](https://microsoft.github.io/TechExc
 
 For running this lab you will need:
 
-* An Azure subscription without a spending cap to deploy the Barracuda firewall from the Azure Marketplace.
+* An Azure subscription without a spending cap.
 * A desktop, laptop, or virtual machine and access to install software on that machine.
