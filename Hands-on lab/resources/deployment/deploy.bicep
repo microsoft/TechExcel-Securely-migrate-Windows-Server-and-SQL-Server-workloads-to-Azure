@@ -38,7 +38,7 @@ var labPassword = 'demo!pass123'
 var labSqlMIPassword = 'demo!pass1234567'
 
 var tags = {
-    purpose: 'MCW'
+    purpose: 'techexcel'
 }
 
 /* ****************************
@@ -187,6 +187,21 @@ resource spoke_hub_vnet_peering 'Microsoft.Network/virtualNetworks/virtualNetwor
     }
 }
 
+resource hub_spoke_vnet_peering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2020-11-01' = {
+    name: '${hub_vnet.name}/hub-spoke'
+    properties: {
+        remoteVirtualNetwork: {
+            id: spoke_vnet.id
+        }
+        allowVirtualNetworkAccess: true
+        allowForwardedTraffic: true
+        remoteAddressSpace: {
+            addressPrefixes: [
+                '10.2.0.0/16'
+            ]
+        }
+    }
+}
 
 /* ****************************
 Azure SQL Managed Instance

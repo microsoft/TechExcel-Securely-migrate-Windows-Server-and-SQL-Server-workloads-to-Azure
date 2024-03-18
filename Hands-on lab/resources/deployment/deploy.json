@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.10.61.36676",
-      "templateHash": "2490412900995803994"
+      "version": "0.26.54.24096",
+      "templateHash": "11658501321318649168"
     }
   },
   "parameters": {
@@ -54,7 +54,7 @@
     "labPassword": "demo!pass123",
     "labSqlMIPassword": "demo!pass1234567",
     "tags": {
-      "purpose": "MCW"
+      "purpose": "techexcel"
     }
   },
   "resources": [
@@ -210,6 +210,27 @@
         "remoteAddressSpace": {
           "addressPrefixes": [
             "10.1.0.0/16"
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('hubNamePrefix')))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('spokeNamePrefix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "apiVersion": "2020-11-01",
+      "name": "[format('{0}/hub-spoke', format('{0}vnet', variables('hubNamePrefix')))]",
+      "properties": {
+        "remoteVirtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('spokeNamePrefix')))]"
+        },
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true,
+        "remoteAddressSpace": {
+          "addressPrefixes": [
+            "10.2.0.0/16"
           ]
         }
       },
