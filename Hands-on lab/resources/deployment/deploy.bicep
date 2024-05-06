@@ -12,7 +12,7 @@ var onpremNamePrefix = '${resourceNameBase}-onprem-'
 var hubNamePrefix = '${resourceNameBase}-hub-'
 var spokeNamePrefix = '${resourceNameBase}-spoke-'
 var sqlmiPrefix = '${resourceNameBase}-sqlmi'
-var sqlmiStorageName = take(concat('${resourceNameBase}-stor', uniqueString(resourceGroup().id) ),24)
+var sqlmiStorageName = take('${resourceNameBase}stor${uniqueString(resourceGroup().id)}',24)
 
 var onpremSQLVMNamePrefix = '${onpremNamePrefix}sql-'
 var onpremHyperVHostVMNamePrefix = '${onpremNamePrefix}hyperv-'
