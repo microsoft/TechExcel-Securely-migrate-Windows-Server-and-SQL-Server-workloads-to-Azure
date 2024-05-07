@@ -228,7 +228,7 @@ resource sqlmi_storage_container 'Microsoft.Storage/storageAccounts/blobServices
 
 
 resource sqlmi 'Microsoft.Sql/managedInstances@2021-05-01-preview' = {
-    name: sqlmiPrefix
+    name: '${sqlmiPrefix}-${uniqueString(resourceGroup().id)}'
     location: location
     dependsOn: [
         sqlmi_subnet_nsg

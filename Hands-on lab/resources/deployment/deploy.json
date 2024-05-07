@@ -266,7 +266,7 @@
     {
       "type": "Microsoft.Sql/managedInstances",
       "apiVersion": "2021-05-01-preview",
-      "name": "[variables('sqlmiPrefix')]",
+      "name": "[format('{0}-{1}', variables('sqlmiPrefix'), uniqueString(resourceGroup().id))]",
       "location": "[variables('location')]",
       "sku": {
         "name": "GP_Gen5",
