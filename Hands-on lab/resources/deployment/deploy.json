@@ -35,7 +35,7 @@
     "hubNamePrefix": "[format('{0}-hub-', parameters('resourceNameBase'))]",
     "spokeNamePrefix": "[format('{0}-spoke-', parameters('resourceNameBase'))]",
     "sqlmiPrefix": "[format('{0}-sqlmi', parameters('resourceNameBase'))]",
-    "sqlmiStorageName": "[take(concat( parameters('resourceNameBase'), 'stor', uniqueString(resourceGroup().id) ),24)]",
+    "sqlmiStorageName": "[take(format('{0}stor{1}', parameters('resourceNameBase'), uniqueString(resourceGroup().id)), 24)]",
     "onpremSQLVMNamePrefix": "[format('{0}sql-', variables('onpremNamePrefix'))]",
     "onpremHyperVHostVMNamePrefix": "[format('{0}hyperv-', variables('onpremNamePrefix'))]",
     "GitHubScriptRepo": "microsoft/MCW-Building-the-business-migration-case-with-Windows-Server-and-SQL-Server",
