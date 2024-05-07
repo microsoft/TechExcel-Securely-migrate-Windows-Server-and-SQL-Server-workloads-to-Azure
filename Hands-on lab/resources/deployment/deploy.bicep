@@ -12,7 +12,7 @@ var onpremNamePrefix = '${resourceNameBase}-onprem-'
 var hubNamePrefix = '${resourceNameBase}-hub-'
 var spokeNamePrefix = '${resourceNameBase}-spoke-'
 var sqlmiPrefix = '${resourceNameBase}-sqlmi'
-var sqlmiStorageName = '${resourceNameBase}sqlmistorage'
+var sqlmiStorageName = take('${resourceNameBase}stor${uniqueString(resourceGroup().id)}',24)
 
 var onpremSQLVMNamePrefix = '${onpremNamePrefix}sql-'
 var onpremHyperVHostVMNamePrefix = '${onpremNamePrefix}hyperv-'
@@ -228,7 +228,7 @@ resource sqlmi_storage_container 'Microsoft.Storage/storageAccounts/blobServices
 
 
 resource sqlmi 'Microsoft.Sql/managedInstances@2021-05-01-preview' = {
-    name: sqlmiPrefix
+    name: '${sqlmiPrefix}-${uniqueString(resourceGroup().id)}'
     location: location
     dependsOn: [
         sqlmi_subnet_nsg
