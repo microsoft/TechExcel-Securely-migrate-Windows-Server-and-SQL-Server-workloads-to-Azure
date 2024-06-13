@@ -16,6 +16,13 @@
         "description": "The prefix base used to name resources created."
       }
     },
+    "deploymentLocation": {
+      "type": "string",
+      "defaultValue": "northcentralus",
+      "metadata": {
+        "description": "The location were all resources are created."
+      }
+    },
     "azureAdUserId": {
       "type": "string",
       "metadata": {
@@ -30,7 +37,7 @@
     }
   },
   "variables": {
-    "location": "northcentralus",
+    "location": "[parameters('deploymentLocation')]",
     "onpremNamePrefix": "[format('{0}-onprem-', parameters('resourceNameBase'))]",
     "hubNamePrefix": "[format('{0}-hub-', parameters('resourceNameBase'))]",
     "spokeNamePrefix": "[format('{0}-spoke-', parameters('resourceNameBase'))]",
