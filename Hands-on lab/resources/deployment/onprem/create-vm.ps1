@@ -49,12 +49,12 @@ Configuration Main
                 cd "C:\git"
 
                 git lfs install --skip-smudge
-                git clone --quiet --single-branch "https://github.com/microsoft/MCW-Building-the-business-migration-case-with-Windows-Server-and-SQL-Server.git"
+                git clone --quiet --single-branch "https://github.com/microsoft/TechExcel-Securely-migrate-Windows-Server-and-SQL-Server-workloads-to-Azure.git"
                 cd "C:\git\MCW-Building-the-business-migration-case-with-Windows-Server-and-SQL-Server\"
                 git lfs pull
                 git lfs install --force
 
-                $downloadedFile = "C:\git\MCW-Building-the-business-migration-case-with-Windows-Server-and-SQL-Server\Hands-on lab\resources\deployment\onprem\OnPremWinServerVM.zip"
+                $downloadedFile = "C:\git\TechExcel-Securely-migrate-Windows-Server-and-SQL-Server-workloads-to-Azure\Hands-on lab\resources\deployment\onprem\OnPremWinServerVM.zip"
                 $vmFolder = "C:\VM"
 
                 Add-Type -assembly "system.io.compression.filesystem"
