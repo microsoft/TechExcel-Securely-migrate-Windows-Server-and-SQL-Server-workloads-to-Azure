@@ -45,7 +45,7 @@
     "sqlmiStorageName": "[format('{0}sqlmistorage', parameters('resourceNameBase'))]",
     "onpremSQLVMNamePrefix": "[format('{0}sql-', variables('onpremNamePrefix'))]",
     "onpremHyperVHostVMNamePrefix": "[format('{0}hyperv-', variables('onpremNamePrefix'))]",
-    "GitHubScriptRepo": "microsoft/MCW-Building-the-business-migration-case-with-Windows-Server-and-SQL-Server",
+    "GitHubScriptRepo": "solliancenet/MCW-Building-the-business-migration-case-with-Windows-Server-and-SQL-Server",
     "GitHubScriptRepoBranch": "main",
     "GitHubScriptRepoBranchURL": "[format('https://raw.githubusercontent.com/{0}/{1}/Hands-on lab/resources/deployment/', variables('GitHubScriptRepo'), variables('GitHubScriptRepoBranch'))]",
     "HyperVHostConfigArchiveFileName": "create-vm.zip",
