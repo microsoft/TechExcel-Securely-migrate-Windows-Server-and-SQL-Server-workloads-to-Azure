@@ -69,7 +69,7 @@ Node "localhost"
 		Invoke-Sqlcmd -ServerInstance Localhost -Database "master" -Query "ALTER LOGIN sa WITH PASSWORD = 'demo!pass123'"
 
 		# Get the database backup 
-		$dbsource = "https://github.com/microsoft/MCW-Building-the-business-migration-case-with-Windows-Server-and-SQL-Server/raw/main/Hands-on%20lab/resources/deployment/onprem/database.bak"
+		$dbsource = "https://github.com/vraposo/TechExcel-Securely-migrate-Windows-Server-and-SQL-Server-workloads-to-Azure/raw/main/Hands-on%20lab/resources/deployment/onprem/database.bak"
 		$dbdestination = "C:\database.bak"
 		
 		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
