@@ -42,7 +42,7 @@
     "hubNamePrefix": "[format('{0}-hub-', parameters('resourceNameBase'))]",
     "spokeNamePrefix": "[format('{0}-spoke-', parameters('resourceNameBase'))]",
     "sqlmiPrefix": "[format('{0}-sqlmi', parameters('resourceNameBase'))]",
-    "sqlmiStorageName": "[format('{0}sqlmistorage', parameters('resourceNameBase'))]",
+    "sqlmiStorageName": "[take(format('{0}stor{1}', parameters('resourceNameBase'), uniqueString(resourceGroup().id)), 24)]",
     "onpremSQLVMNamePrefix": "[format('{0}sql-', variables('onpremNamePrefix'))]",
     "onpremHyperVHostVMNamePrefix": "[format('{0}hyperv-', variables('onpremNamePrefix'))]",
     "GitHubScriptRepo": "microsoft/TechExcel-Securely-migrate-Windows-Server-and-SQL-Server-workloads-to-Azure",
@@ -273,7 +273,7 @@
     {
       "type": "Microsoft.Sql/managedInstances",
       "apiVersion": "2021-05-01-preview",
-      "name": "[variables('sqlmiPrefix')]",
+      "name": "[format('{0}-{1}', variables('sqlmiPrefix'), uniqueString(resourceGroup().id))]",
       "location": "[variables('location')]",
       "sku": {
         "name": "GP_Gen5",
