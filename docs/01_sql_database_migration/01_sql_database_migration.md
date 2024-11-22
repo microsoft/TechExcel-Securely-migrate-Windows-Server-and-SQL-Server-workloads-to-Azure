@@ -19,7 +19,7 @@ In this exercise, you will go through the steps necessary to migrate Tailspin To
 
 After you complete this lab, you will be able to:
 
-* Install Data Migration Assistant
+* Install Data Migration Assistant & Azure Data Studio
 * Assess on-premises database compatibility
 * Backup on-premises SQL database
 * Migrate database to Azure SQL MI
@@ -27,16 +27,3 @@ After you complete this lab, you will be able to:
 ## Lab Duration
 
 * **Estimated Time:** 75 minutes
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -9,7 +9,7 @@ has_children: true
 
 ## Lab Scenario
 
-In this exercise, you will use Microsoft Defender to help you protect your workloads like SQL databases, Storage Accounts, and Virtual Machines. We will also configure a managed firewall to protect the network traffic. We will use Azure Firewall. 
+In this exercise, you will use Microsoft Defender to help you protect your workloads like SQL databases, Storage Accounts, and Virtual Machines. We will also configure a managed firewall to protect the network traffic. We will use Azure Firewall.
 
 ## Objectives
 
