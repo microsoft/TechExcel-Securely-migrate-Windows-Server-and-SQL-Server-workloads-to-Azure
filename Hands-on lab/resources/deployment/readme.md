@@ -5,7 +5,7 @@ This folder contains the Before Hands-on Lab setup deployment scripts for creati
 Select the button below to deploy the existing Tailspin Toys resources for the Hands-on Lab (HOL) to your Azure Subscription:
 
 [![Deploy To Azure](../../images/deploytoazure.svg "Deploy To Azure")](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTechExcel-Securely-migrate-Windows-Server-and-SQL-Server-workloads-to-Azure%2Fmain%2FHands-on%2520lab%2Fresources%2Fdeployment%2Fdeploy.json)
-[![Deploy To Azure US Gov](../../images/deploytoazuregov.svg "Deploy to Azure Gov)](https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTechExcel-Securely-migrate-Windows-Server-and-SQL-Server-workloads-to-Azure%2Fmain%2FHands-on%2520lab%2Fresources%2Fdeployment%2Fdeploy.json)
+[![Deploy To Azure US Gov](../../images/deploytoazuregov.svg "Deploy to Azure Gov")](https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FTechExcel-Securely-migrate-Windows-Server-and-SQL-Server-workloads-to-Azure%2Fmain%2FHands-on%2520lab%2Fresources%2Fdeployment%2Fdeploy.json)
 
 The following resources will be provisioned:
 
