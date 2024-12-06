@@ -17,7 +17,6 @@ After you complete this lab, you will be able to:
 
 * Create a Windows Server 2022 VM to host the Web Application.
 * Make sure you can connect to the VM using Azure Bastion.
-* Migrate a sample web application
 
 ## Lab Duration
 
