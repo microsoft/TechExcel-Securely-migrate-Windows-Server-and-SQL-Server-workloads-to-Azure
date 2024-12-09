@@ -1,18 +1,49 @@
-@description('The prefix base used to name resources created.')
-param resourceNameBase string = 'tailspin'
+// @description('The prefix base used to name resources created.')
+// @maxLength(15)
+// param resourceNameBase string = 'tailspin${take(uniqueString(resourceGroup().id), 7)}'
+var resourceNameBase = 'tailspin${take(uniqueString(resourceGroup().id), 7)}'
 
-@description('The Id of the Azure AD User')
+@description('The location were all resources are created.')
+param deploymentLocation string = 'northcentralus'
+
+@description('The Id of the Azure AD User.')
 param azureAdUserId string
-@description('The Login of the Azure AD User (ex: username@domain.onmicrosoft.com)')
+@description('The Login of the Azure AD User (ex: username@domain.onmicrosoft.com).')
 param azureAdUserLogin string
 
-var location = 'northcentralus' /* resourceGroup().location */
+@description('The VM size for the virtual machines. Allows Intel and AMD 4-core options with premium and non-premium storage.')
+@allowed([
+    'Standard_D4s_v5' // Default value
+    'Standard_D4s_v4'
+    'Standard_D4as_v5' // AMD-based, 4 vCPUs, premium storage
+    'Standard_D4_v5' // Intel-based, 4 vCPUs, non-premium storage
+    'Standard_D4a_v4' // AMD-based, 4 vCPUs, non-premium storage
+    'Standard_D4d_v5' // Intel-based, 4 vCPUs, premium storage
+    'Standard_D4ds_v5' // Intel-based, 4 vCPUs, premium storage
+    'Standard_D4as_v4' // AMD-based, 4 vCPUs, non-premium storage
+])
+param onpremVMSize string = 'Standard_D4s_v5'
+
+@description('The SKU of the SQL Managed Instance.')
+@allowed([
+    'GP_Gen4'
+    'GP_Gen5'
+])
+param sqlmiSku string = 'GP_Gen5'
+@description('The number of vCores for the SQL Managed Instance.')
+@allowed([
+    4
+    8
+])
+param sqlmiVCores int = 8
+
+var location = deploymentLocation
 
 var onpremNamePrefix = '${resourceNameBase}-onprem-'
 var hubNamePrefix = '${resourceNameBase}-hub-'
 var spokeNamePrefix = '${resourceNameBase}-spoke-'
 var sqlmiPrefix = '${resourceNameBase}-sqlmi'
-var sqlmiStorageName = '${resourceNameBase}sqlmistorage'
+var sqlmiStorageName = '${resourceNameBase}sqlmistor'
 
 var onpremSQLVMNamePrefix = '${onpremNamePrefix}sql-'
 var onpremHyperVHostVMNamePrefix = '${onpremNamePrefix}hyperv-'
@@ -40,6 +71,8 @@ var labSqlMIPassword = 'demo!pass1234567'
 var tags = {
     purpose: 'techexcel'
 }
+
+
 
 /* ****************************
 Virtual Networks
@@ -135,12 +168,15 @@ resource spoke_vnet 'Microsoft.Network/virtualNetworks@2020-11-01' = {
     }
 }
 
+
+
 /* ****************************
 Virtual Network Peerings
 **************************** */
 
 resource hub_onprem_vnet_peering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2020-11-01' = {
-    name: '${hub_vnet.name}/hub-onprem'
+    parent: hub_vnet
+    name: 'hub-onprem'
     properties: {
         remoteVirtualNetwork: {
             id: onprem_vnet.id
@@ -156,7 +192,8 @@ resource hub_onprem_vnet_peering 'Microsoft.Network/virtualNetworks/virtualNetwo
 }
 
 resource onprem_hub_vnet_peering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2020-11-01' = {
-    name: '${onprem_vnet.name}/onprem-hub'
+    parent: onprem_vnet
+    name: 'onprem-hub'
     properties: {
         remoteVirtualNetwork: {
             id: hub_vnet.id
@@ -172,7 +209,8 @@ resource onprem_hub_vnet_peering 'Microsoft.Network/virtualNetworks/virtualNetwo
 }
 
 resource spoke_hub_vnet_peering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2020-11-01' = {
-    name: '${spoke_vnet.name}/spoke-hub'
+    parent: spoke_vnet
+    name: 'spoke-hub'
     properties: {
         remoteVirtualNetwork: {
             id: hub_vnet.id
@@ -188,7 +226,8 @@ resource spoke_hub_vnet_peering 'Microsoft.Network/virtualNetworks/virtualNetwor
 }
 
 resource hub_spoke_vnet_peering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2020-11-01' = {
-    name: '${hub_vnet.name}/hub-spoke'
+    parent: hub_vnet
+    name: 'hub-spoke'
     properties: {
         remoteVirtualNetwork: {
             id: spoke_vnet.id
@@ -202,6 +241,8 @@ resource hub_spoke_vnet_peering 'Microsoft.Network/virtualNetworks/virtualNetwor
         }
     }
 }
+
+
 
 /* ****************************
 Azure SQL Managed Instance
@@ -226,7 +267,6 @@ resource sqlmi_storage_container 'Microsoft.Storage/storageAccounts/blobServices
     }
 }
 
-
 resource sqlmi 'Microsoft.Sql/managedInstances@2021-05-01-preview' = {
     name: sqlmiPrefix
     location: location
@@ -234,7 +274,7 @@ resource sqlmi 'Microsoft.Sql/managedInstances@2021-05-01-preview' = {
         sqlmi_subnet_nsg
     ]
     sku: {
-        name: 'GP_Gen5'
+        name: sqlmiSku
         tier: 'GeneralPurpose'
     }
     identity: {
@@ -243,9 +283,8 @@ resource sqlmi 'Microsoft.Sql/managedInstances@2021-05-01-preview' = {
     properties: {
         subnetId: '${spoke_vnet.id}/subnets/AzureSQLMI'
         storageSizeInGB: 64
-        vCores: 8
+        vCores: sqlmiVCores
         licenseType: 'LicenseIncluded'
-        hardwareFamily: 'Gen5'
         zoneRedundant: false
         minimalTlsVersion: '1.2'
         requestedBackupStorageRedundancy: 'Geo'
@@ -262,7 +301,6 @@ resource sqlmi 'Microsoft.Sql/managedInstances@2021-05-01-preview' = {
     }
 }
 
-
 resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
     name: '${sqlmiPrefix}-rt'
     location: location
@@ -273,7 +311,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '65.55.188.0/24'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -281,7 +318,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '207.68.190.32/27'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -289,7 +325,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '13.106.78.32/27'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -297,7 +332,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '13.106.174.32/27'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -305,7 +339,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '13.106.4.96/27'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -313,7 +346,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '104.214.108.80/32'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -321,7 +353,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '52.179.184.76/32'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -329,7 +360,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '52.187.116.202/32'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -337,7 +367,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '52.177.202.6/32'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -345,7 +374,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '23.98.55.75/32'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -353,7 +381,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '23.96.178.199/32'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -361,7 +388,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '52.162.107.128/27'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -369,7 +395,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '40.74.254.227/32'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -377,7 +402,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '23.96.185.63/32'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -385,7 +409,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '65.52.59.57/32'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -393,7 +416,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '168.62.244.242/32'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -401,7 +423,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: '10.2.1.0/24'
                     nextHopType: 'VnetLocal'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -409,7 +430,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'Storage'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -417,7 +437,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'SqlManagement'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -425,7 +444,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'AzureMonitor'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -433,7 +451,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'CorpNetSaw'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -441,7 +458,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'CorpNetPublic'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -449,7 +465,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'AzureActiveDirectory'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -457,7 +472,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'AzureCloud.northcentralus'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -465,7 +479,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'AzureCloud.southcentralus'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -473,7 +486,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'Storage.northcentralus'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -481,7 +493,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'Storage.southcentralus'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -489,7 +500,6 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'EventHub.northcentralus'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
             {
@@ -497,13 +507,11 @@ resource sqlmi_subnet_routetable 'Microsoft.Network/routeTables@2022-01-01'= {
                 properties: {
                     addressPrefix: 'EventHub.southcentralus'
                     nextHopType: 'Internet'
-                    hasBgpOverride: false
                 }
             }
         ]
     }
 }
-
 
 resource sqlmi_subnet_nsg 'Microsoft.Network/networkSecurityGroups@2022-01-01' = {
     name: '${sqlmiPrefix}-nsg'
@@ -851,12 +859,11 @@ resource sqlmi_subnet_nsg 'Microsoft.Network/networkSecurityGroups@2022-01-01' =
 
 
 
-
 /* ****************************
 Azure Bastion
 **************************** */
 
-resource hub_bastion 'Microsoft.Network/bastionHosts@2020-11-01' = {
+resource hub_bastion 'Microsoft.Network/bastionHosts@2023-09-01' = {
     name: '${hubNamePrefix}bastion'
     location: location
     tags: tags
@@ -879,7 +886,6 @@ resource hub_bastion 'Microsoft.Network/bastionHosts@2020-11-01' = {
             }
         ]
     }
-
 }
 
 resource hub_bastion_public_ip 'Microsoft.Network/publicIPAddresses@2020-11-01' = {
@@ -895,6 +901,8 @@ resource hub_bastion_public_ip 'Microsoft.Network/publicIPAddresses@2020-11-01' 
         publicIPAllocationMethod: 'Static'
     }
 }
+
+
 
 /* ****************************
 On-premises Hyper-V Host VM
@@ -951,7 +959,7 @@ resource onprem_hyperv_vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
     tags: tags
     properties: {
         hardwareProfile: {
-            vmSize: 'Standard_D4s_v5'
+            vmSize: onpremVMSize
         }
         storageProfile: {
             osDisk: {
@@ -960,7 +968,7 @@ resource onprem_hyperv_vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
             imageReference: {
                 publisher: 'MicrosoftWindowsServer'
                 offer: 'WindowsServer'
-                sku: '2019-datacenter-gensecond'
+                sku: '2022-datacenter-g2'
                 version: 'latest'
             }
         }
@@ -973,14 +981,17 @@ resource onprem_hyperv_vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
         }
         osProfile: {
             computerName: 'WinServer'
+#disable-next-line adminusername-should-not-be-literal
             adminUsername: labUsername
+#disable-next-line use-secure-value-for-secure-inputs
             adminPassword: labPassword
         }
     }
 }
 
 resource onprem_hyperv_vm_ext_installhyperv 'Microsoft.Compute/virtualMachines/extensions@2017-12-01' = {
-    name: '${onprem_hyperv_vm.name}/InstallHyperV'
+    parent: onprem_hyperv_vm
+    name: 'InstallHyperV'
     location: location
     tags: tags
     properties: {
@@ -998,7 +1009,8 @@ resource onprem_hyperv_vm_ext_installhyperv 'Microsoft.Compute/virtualMachines/e
 }
 
 resource onprem_hyperv_vm_ext_createvm 'Microsoft.Compute/virtualMachines/extensions@2017-12-01' = {
-    name: '${onprem_hyperv_vm.name}/CreateWinServerVM'
+    parent: onprem_hyperv_vm
+    name: 'CreateWinServerVM'
     location: location
     tags: tags
     dependsOn: [
@@ -1018,6 +1030,7 @@ resource onprem_hyperv_vm_ext_createvm 'Microsoft.Compute/virtualMachines/extens
         }
     }
 }
+
 
 
 /* ****************************
@@ -1075,7 +1088,7 @@ resource onprem_sqlvm_vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
     tags: tags
     properties: {
         hardwareProfile: {
-            vmSize: 'Standard_D4s_v5'
+            vmSize: onpremVMSize
         }
         storageProfile: {
             osDisk: {
@@ -1083,7 +1096,7 @@ resource onprem_sqlvm_vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
             }
             imageReference: {
                 publisher: 'MicrosoftSQLServer'
-                offer: 'SQL2012SP4-WS2012R2'
+                offer: 'SQL2019-WS2022'
                 sku: 'Standard'
                 version: 'latest'
             }
@@ -1097,17 +1110,19 @@ resource onprem_sqlvm_vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
         }
         osProfile: {
             computerName: 'SQLServer'
+#disable-next-line adminusername-should-not-be-literal
             adminUsername: labUsername
+#disable-next-line use-secure-value-for-secure-inputs
             adminPassword: labPassword
         }
     }
 }
 
 resource onprem_sqlvm_vm_ext_sqlvmconfig 'Microsoft.Compute/virtualMachines/extensions@2017-12-01' = {
-    name: '${onprem_sqlvm_vm.name}/SQLVMConfig'
+    parent: onprem_sqlvm_vm
+    name: 'SQLVMConfig'
     location: location
     tags: tags
-    dependsOn: []
     properties: {
         publisher: 'Microsoft.Powershell'
         type: 'DSC'

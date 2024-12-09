@@ -19,6 +19,7 @@ In this first exercise, you will retrieve the ID for your Entra ID user account,
 After you complete this exercise, you will be able to:
 
 * Find an Entra ID user ID
+* Validate Resource providers
 * Deploy an ARM Template
 
 ## Lab Duration
